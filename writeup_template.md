@@ -16,12 +16,12 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 [image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
+[image2]: ./examples/img1.png
 [image3]: ./examples/sliding_windows.jpg
 [image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
+[image5]: ./examples/img2.png
 [image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
+[image7]: ./examples/img3.png
 [video1]: ./project_video.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
@@ -38,7 +38,7 @@ You're reading it!
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+The code for this step is contained in lines 35 through 54 of the file called `feature_extraction.py`.  
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
@@ -46,32 +46,34 @@ I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an 
 
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+Here is an example using the `YUV` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
 
 ![alt text][image2]
 
 #### 2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and...
+I tried various combinations of parameters and color spaces. YUV with all channels seems to perform the best. Based on the image size, I first fixed the `orient`, `pix_per_cell` and `cell_per_block` parameters, and get a sensen what different color spaces look like. Once I found the best color space, then I fine tuned other parameters. 
+My final choice is YUV first channel with `orient=12`, `pix_per_cell=8`,`cell_per_block=2`. 
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using...
+I trained a linear SVM using sklearn package. I extract HOG features using `extract_features()`). Then all the data is randomly shuffled and split to training data (70%) and test data (30%). Later on, color features were also added for further model performance improvement. 
 
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+As we know, cars should only the road, which is the bottom half of the image. Since cars can be different sizes depending on the relative distance to the car that equipped with camera. Note only small windows were used for cars that far away.
 
-![alt text][image3]
+2 window sizes `(96,96)` and `(128,128)` were tested, because of the time complexity. We would like to classify at least a few images in a second for this algorithm to be useable in real time. The range of search area is `(300, 600)` and `(300, None)` in y-direction. 
+
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
 
-![alt text][image4]
+
 ---
 
 ### Video Implementation
@@ -104,5 +106,12 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+Sometimes the algorithm doesn't capture the cars if they are relatively far away. This is due to the selection of the box. 
+Another problem is that it doesn't follow the car smoothly and the bounding box doesn't surround the car perfectly.
+
+In order to solve these, here are the possible solutions:
+
+1. Run more box sizes.
+
+2. Try different combination of Features.
 
